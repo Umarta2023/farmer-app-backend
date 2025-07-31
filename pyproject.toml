@@ -1,0 +1,2 @@
+[tool.pylance.env]
+python.analysis.extraPaths = ["."]
