@@ -43,7 +43,7 @@ def read_root():
 
 
 # --- Эндпоинты для работы с пользователями ---
-@app.post("/api/users/get_or_create", response_model=user_schema.UserDisplay, tags=["Users"])
+@app.post("/users/get_or_create", response_model=user_schema.UserDisplay, tags=["Users"])
 def get_or_create_user_endpoint(
     user_data: user_schema.UserCreate,
     db: Session = Depends(get_db)
@@ -51,7 +51,7 @@ def get_or_create_user_endpoint(
     return user_crud.get_or_create_user(db=db, user=user_data)
 
 
-@app.get("/api/users/{user_id}", response_model=user_schema.UserDisplay, tags=["Users"])
+@app.get("/users/{user_id}", response_model=user_schema.UserDisplay, tags=["Users"])
 def get_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     db_user = user_crud.get_user(db, user_id=user_id)
     if db_user is None:
@@ -59,7 +59,7 @@ def get_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 # --- Эндпоинт для виджета цен (ЗАГЛУШКА) ---
-@app.get("/api/prices/{region}", tags=["Prices"])
+@app.get("/prices/{region}", tags=["Prices"])
 def get_prices_for_region(region: str):
     """
     Возвращает цены на ключевые культуры для указанного региона.
@@ -75,7 +75,7 @@ def get_prices_for_region(region: str):
     ]
     return mock_prices
 
-@app.put("/api/users/{user_id}/region", response_model=user_schema.UserDisplay, tags=["Users"])
+@app.put("/users/{user_id}/region", response_model=user_schema.UserDisplay, tags=["Users"])
 def update_user_region_endpoint(
     user_id: int,
     region_data: user_schema.UserUpdate, # Используем нашу схему для обновления
@@ -94,7 +94,7 @@ def update_user_region_endpoint(
     return updated_user
 
 # --- Эндпоинты для работы с объявлениями ---
-@app.post("/api/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
+@app.post("/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def create_new_announcement(
     announcement: announcement_schema.AnnouncementCreate, # <-- Схема теперь без региона
     current_user_id: int,
@@ -112,7 +112,7 @@ def create_new_announcement(
         owner=db_user # <-- Передаем весь объект
     )
 
-@app.get("/api/announcements/", response_model=List[announcement_schema.AnnouncementDisplay], tags=["Announcements"])
+@app.get("/announcements/", response_model=List[announcement_schema.AnnouncementDisplay], tags=["Announcements"])
 def read_announcements(
     skip: int = 0,
     limit: int = 100,
@@ -124,7 +124,7 @@ def read_announcements(
     )
     return announcements
 
-@app.get("/api/announcements/{announcement_id}", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
+@app.get("/announcements/{announcement_id}", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def read_announcement_details(
     announcement_id: int,
     db: Session = Depends(get_db)
