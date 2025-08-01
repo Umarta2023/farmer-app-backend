@@ -1,5 +1,5 @@
 # main.py
-from fastapi import FastAPI, Depends, HTTPException, APIRouter, File, UploadFile # <-- Добавляем APIRouter
+from fastapi import FastAPI, Depends, HTTPException, APIRouter, File, UploadFile, Form # <-- Добавляем APIRouter
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
@@ -88,24 +88,37 @@ def update_user_region_endpoint(user_id: int, region_data: user_schema.UserUpdat
 
 # main.py
 
+# main.py
+
 @api_router.post("/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def create_new_announcement(
-    # Данные формы теперь приходят через Depends, а не Body
-    announcement_data: announcement_schema.AnnouncementCreate = Depends(), 
-    current_user_id: int = Depends(), # ID тоже теперь из формы
+    # --- НАЧАЛО ИЗМЕНЕНИЙ ---
+    # Текстовые поля из multipart/form-data нужно принимать через Form()
+    title: str = Form(...),
+    description: Optional[str] = Form(None),
+    price: Optional[float] = Form(None),
+    current_user_id: int = Form(...),
+    # --- КОНЕЦ ИЗМЕНЕНИЙ ---
     db: Session = Depends(get_db),
-    # А вот и наш файл! Он опциональный.
     image: UploadFile = File(None) 
 ):
-    # ... (проверка пользователя остается) ...
-    
-    if image:
-        # В реальном приложении здесь будет логика сохранения файла
-        # на диск или в облачное хранилище (S3, etc.)
-        # и сохранения пути к файлу в БД.
-        # А пока просто выведем информацию о нем.
-        print(f"Получен файл: {image.filename}, тип: {image.content_type}")
+    # Проверяем, существует ли пользователь-автор
+    db_user = user_crud.get_user(db, user_id=current_user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="Author (user) not found")
 
+    # Собираем данные в Pydantic-схему вручную
+    announcement_data = announcement_schema.AnnouncementCreate(
+        title=title,
+        description=description,
+        price=price
+    )
+
+    if image:
+        print(f"Получен файл: {image.filename}, тип: {image.content_type}")
+        # Здесь будет логика сохранения файла
+
+    # Передаем Pydantic-схему и объект автора в CRUD-функцию
     return announcement_crud.create_announcement(
         db=db,
         announcement=announcement_data,
