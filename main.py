@@ -15,7 +15,7 @@ from schemas import announcement as announcement_schema
 app = FastAPI(
     title="Farmer's App API",
     description="API для приложения фермерского сообщества",
-    version="0.3.0"  # Повысим версию, чтобы точно видеть изменения
+    version="0.4.0-CORS-DEBUG" # <-- Новая версия
 )
 
 origins = [
@@ -27,10 +27,10 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # <-- РАЗРЕШАЕМ АБСОЛЮТНО ВСЕ ИСТОЧНИКИ
     allow_credentials=True,
-    allow_methods=["*"], # Упростим, разрешив все методы
-    allow_headers=["*"], # И все заголовки
+    allow_methods=["*"],  # Разрешаем все методы
+    allow_headers=["*"],  # Разрешаем все заголовки
 )
 
 
