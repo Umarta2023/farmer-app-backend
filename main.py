@@ -21,18 +21,16 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://farmer-app-frontend-ekracyjhz-rustams-projects-a2abc4d7.vercel.app/"
-    "https://*.vercel.app" 
+    # Добавлена запятая, убран слэш в конце
+    "https://farmer-app-frontend-ekracyjhz-rustams-projects-a2abc4d7.vercel.app", 
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    # Явно разрешаем все методы, включая OPTIONS
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
-    # Явно разрешаем все стандартные и нестандартные заголовки
-    allow_headers=["*"],
+    allow_methods=["*"], # Упростим, разрешив все методы
+    allow_headers=["*"], # И все заголовки
 )
 
 
