@@ -52,8 +52,18 @@ def get_user_endpoint(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-# ... и так далее для ВСЕХ остальных эндпоинтов ...
-# Замените @app.get на @api_router.get, @app.post на @api_router.post и т.д.
+@api_router.get("/users/{user_id}/announcements", response_model=List[announcement_schema.AnnouncementDisplay], tags=["Users"])
+def read_user_announcements(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Получает список объявлений, созданных пользователем.
+    """
+    # В реальном приложении можно было бы добавить проверку,
+    # что пользователь с user_id вообще существует.
+    announcements = announcement_crud.get_announcements_by_owner_id(db=db, owner_id=user_id)
+    return announcements
 
 @api_router.get("/prices/{region}", tags=["Prices"])
 def get_prices_for_region(region: str):

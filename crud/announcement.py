@@ -32,3 +32,7 @@ def get_announcements(db: Session, skip: int = 0, limit: int = 100, region: Opti
 def get_announcement_by_id(db: Session, announcement_id: int):
     """Возвращает одно объявление по его ID."""
     return db.query(announcement_model.Announcement).filter(announcement_model.Announcement.id == announcement_id).first()
+
+def get_announcements_by_owner_id(db: Session, owner_id: int):
+    """Возвращает все объявления указанного пользователя."""
+    return db.query(announcement_model.Announcement).filter(announcement_model.Announcement.owner_id == owner_id).all()
