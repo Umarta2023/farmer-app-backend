@@ -12,8 +12,13 @@ class UserBase(BaseModel):
     last_name: Optional[str] = Field(None, description="Фамилия пользователя")
     region: Optional[str] = Field(None, description="Регион, указанный пользователем")
 
-class UserCreate(UserBase):
-    pass
+# schemas/user.py
+class UserCreate(BaseModel):
+    id: int = Field(...)
+    username: Optional[str] = Field(None)
+    first_name: str = Field(...)
+    last_name: Optional[str] = Field(None)
+    # Здесь НЕ должно быть region
 
 class UserUpdate(BaseModel):
     region: Optional[str] = Field(None, description="Регион, указанный пользователем")

@@ -7,8 +7,14 @@ def get_user(db: Session, user_id: int):
     return db.query(user_model.User).filter(user_model.User.id == user_id).first()
 
 def create_user(db: Session, user: user_schema.UserCreate):
-    # В Pydantic v2 .dict() считается устаревшим, используем .model_dump()
-    db_user = user_model.User(**user.model_dump())
+    # Создаем объект, явно передавая поля, которые есть в схеме
+    db_user = user_model.User(
+        id=user.id,
+        username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name
+        # region по умолчанию будет NULL
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -21,14 +27,9 @@ def get_or_create_user(db: Session, user: user_schema.UserCreate):
     return create_user(db, user=user)
 
 def update_user_region(db: Session, user_id: int, region: str):
-    """Обновляет регион для указанного пользователя."""
-    # Находим пользователя в базе
     db_user = get_user(db, user_id=user_id)
-    
     if db_user:
-        # Если нашли, обновляем поле region
         db_user.region = region
-        db.commit() # Сохраняем изменения
-        db.refresh(db_user) # Обновляем объект из БД
-    
+        db.commit()
+        db.refresh(db_user)
     return db_user
