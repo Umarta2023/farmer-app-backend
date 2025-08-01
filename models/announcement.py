@@ -11,7 +11,7 @@ class Announcement(Base):
     description = Column(String, nullable=True)
     price = Column(Float, nullable=True)
     region = Column(String, index=True, nullable=True)
-    
+    image_url = Column(String, nullable=True)
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     
     # Эта строка создает связь с моделью User.

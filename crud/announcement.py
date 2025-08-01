@@ -5,14 +5,15 @@ from schemas import announcement as announcement_schema
 from typing import Optional
 from models import user as user_model
 
-def create_announcement(db: Session, announcement: announcement_schema.AnnouncementCreate, owner: user_model.User):
+def create_announcement(db: Session, announcement: announcement_schema.AnnouncementCreate, owner: user_model.User, image_url: Optional[str] = None):
     """Создает новое объявление, автоматически подставляя регион из профиля автора."""
     db_announcement = announcement_model.Announcement(
         title=announcement.title,
         description=announcement.description,
         price=announcement.price,
         owner_id=owner.id,
-        region=owner.region  # <-- Вот магия! Берем регион из объекта owner
+        region=owner.region,  
+        image_url=image_url
     )
     db.add(db_announcement)
     db.commit()

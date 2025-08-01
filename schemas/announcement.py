@@ -19,6 +19,7 @@ class AnnouncementDisplay(BaseModel):
     description: Optional[str] = None
     price: Optional[float] = None
     region: Optional[str] = None
+    image_url: Optional[str] = None
     created_at: datetime.datetime
     
     # Здесь мы будем отображать полную информацию об авторе
