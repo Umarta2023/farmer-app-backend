@@ -37,8 +37,7 @@ app.add_middleware(
 # --- Базовый эндпоинт ---
 @app.get("/")
 def read_root():
-    return {"message": "Добро пожаловать в API для приложения фермеров!"}
-
+    return {"message": "API для фермеров, версия 1.0 - CORS ИСПРАВЛЕН"}
 
 # --- Эндпоинты для работы с пользователями ---
 @app.post("/users/get_or_create", response_model=user_schema.UserDisplay, tags=["Users"])
