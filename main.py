@@ -2,6 +2,7 @@
 
 import shutil
 import uuid
+import os
 from fastapi import FastAPI, Depends, HTTPException, APIRouter, File, UploadFile, Form
 from fastapi.staticfiles import StaticFiles # <-- Импорт для статических файлов
 from sqlalchemy.orm import Session
