@@ -1,13 +1,12 @@
 # main.py
 
-import shutil
 import uuid
-import os
 from fastapi import FastAPI, Depends, HTTPException, APIRouter, File, UploadFile, Form
-from fastapi.staticfiles import StaticFiles # <-- Импорт для статических файлов
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
+from pyuploadcare import Uploadcare
+from config import settings
 
 # Импортируем все наши модули
 from database import get_db
@@ -20,12 +19,14 @@ from schemas import announcement as announcement_schema
 app = FastAPI(
     title="Farmer's App API",
     description="API для приложения фермерского сообщества",
-    version="1.1.0" # Повышаем версию
+    version="1.2.0" # Повышаем версию с Uploadcare
 )
 
-# --- Монтируем папку uploads для раздачи статических файлов ---
-# Любой файл в папке /uploads будет доступен по URL /uploads/имя_файла
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# --- Конфигурация Uploadcare ---
+uploadcare = Uploadcare(
+    public_key=settings.UPLOADCARE_PUBLIC_KEY,
+    secret_key=settings.UPLOADCARE_SECRET_KEY,
+)
 
 # --- Настройка CORS ---
 app.add_middleware(
@@ -39,12 +40,10 @@ app.add_middleware(
 # --- Создаем роутер с префиксом /api ---
 api_router = APIRouter(prefix="/api")
 
-
 # --- Базовый эндпоинт (вне /api) ---
 @app.get("/")
 def read_root():
-    return {"message": "API для фермеров, версия 1.1.0"}
-
+    return {"message": "API для фермеров, версия 1.2.0"}
 
 # --- Эндпоинты, которые будут входить в /api ---
 
@@ -92,20 +91,13 @@ def create_new_announcement(
 
     image_url_to_save = None
     if image:
-        # Убедимся, что папка uploads существует
-        os.makedirs("uploads", exist_ok=True)
-        # Генерируем уникальное имя файла
-        unique_id = uuid.uuid4()
-        extension = image.filename.split('.')[-1]
-        image_filename = f"{unique_id}.{extension}"
-        image_path = f"uploads/{image_filename}"
-
-        # Сохраняем файл на диск
-        with open(image_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        # Сохраняем относительный путь для доступа через API
-        image_url_to_save = f"/uploads/{image_filename}"
+        # Читаем файл в байты
+        file_bytes = image.file.read()
+        # Загружаем файл в Uploadcare
+        ucare_file = uploadcare.upload(file_bytes)
+        # Получаем готовый CDN URL
+        image_url_to_save = ucare_file.cdn_url
+        print(f"Файл загружен в Uploadcare, URL: {image_url_to_save}")
         
     announcement_data = announcement_schema.AnnouncementCreate(
         title=title, description=description, price=price
@@ -138,7 +130,5 @@ app.include_router(api_router)
 # --- Блок для прямого запуска (для отладки) ---
 if __name__ == "__main__":
     import uvicorn
-    # Добавляем os для создания папки
-    import os
     print("--- Запуск в режиме прямой отладки ---")
     uvicorn.run(app, host="127.0.0.1", port=8000)
