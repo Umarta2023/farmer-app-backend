@@ -83,6 +83,8 @@ def get_prices_for_region(region: str):
 
 # main.py
 
+# main.py
+
 @api_router.post("/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def create_new_announcement(
     title: str = Form(...),
@@ -102,12 +104,8 @@ def create_new_announcement(
         # Читаем файл в байты
         file_bytes = image.file.read()
         
-        # Используем upload_files, который умеет работать с байтами
-        # Оборачиваем байты и имя файла в словарь
-        files = {image.filename: file_bytes}
-        
-        # Загружаем файлы в Uploadcare
-        result = uploadcare.upload_files(files)
+        # Передаем СПИСОК из байт, а не словарь
+        result = uploadcare.upload_files([file_bytes])
         
         # Получаем UUID первого (и единственного) загруженного файла
         file_uuid = result[0].uuid
