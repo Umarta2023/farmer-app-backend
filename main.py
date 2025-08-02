@@ -31,10 +31,10 @@ uploadcare = Uploadcare(
 # --- Настройка CORS ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # Разрешаем все домены
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"], # Разрешаем все методы (GET, POST, OPTIONS и т.д.)
+    allow_headers=["*"], # Разрешаем все заголовки
 )
 
 # --- Создаем роутер с префиксом /api ---
