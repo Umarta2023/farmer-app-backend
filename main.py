@@ -81,6 +81,8 @@ def get_prices_for_region(region: str):
     ]
     return mock_prices
 
+# main.py
+
 @api_router.post("/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def create_new_announcement(
     title: str = Form(...),
@@ -96,13 +98,27 @@ def create_new_announcement(
 
     image_url_to_save = None
     if image:
+        # --- НАЧАЛО ИСПРАВЛЕНИЯ ---
         # Читаем файл в байты
         file_bytes = image.file.read()
-        # Загружаем файл в Uploadcare
-        ucare_file = uploadcare.upload(file_bytes)
+        
+        # Используем upload_files, который умеет работать с байтами
+        # Оборачиваем байты и имя файла в словарь
+        files = {image.filename: file_bytes}
+        
+        # Загружаем файлы в Uploadcare
+        result = uploadcare.upload_files(files)
+        
+        # Получаем UUID первого (и единственного) загруженного файла
+        file_uuid = result[0].uuid
+        
+        # Создаем объект File из UUID
+        ucare_file = uploadcare.file(file_uuid)
+        
         # Получаем готовый CDN URL
         image_url_to_save = ucare_file.cdn_url
         print(f"Файл загружен в Uploadcare, URL: {image_url_to_save}")
+        # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
         
     announcement_data = announcement_schema.AnnouncementCreate(
         title=title, description=description, price=price
