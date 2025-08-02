@@ -47,6 +47,11 @@ def read_root():
 
 # --- Эндпоинты, которые будут входить в /api ---
 
+@api_router.get("/health", status_code=200)
+def health_check():
+    """Простой эндпоинт для проверки, что сервер жив."""
+    return {"status": "ok"}
+
 @api_router.post("/users/get_or_create", response_model=user_schema.UserDisplay, tags=["Users"])
 def get_or_create_user_endpoint(user_data: user_schema.UserCreate, db: Session = Depends(get_db)):
     return user_crud.get_or_create_user(db=db, user=user_data)
