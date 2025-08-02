@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
 from pyuploadcare import Uploadcare
+
 from config import settings
 
 # Импортируем все наши модули
@@ -85,6 +86,8 @@ def get_prices_for_region(region: str):
 
 # main.py
 
+# main.py
+
 @api_router.post("/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def create_new_announcement(
     title: str = Form(...),
@@ -103,18 +106,14 @@ def create_new_announcement(
         # --- НАЧАЛО ИСПРАВЛЕНИЯ ---
         # Читаем файл в байты
         file_bytes = image.file.read()
+
+        # Используем `uploader` прямо из нашего `uploadcare` объекта
+        # Это более стабильный способ
+        response = uploadcare.uploader.upload(file_bytes, file_name=image.filename)
         
-        # Передаем СПИСОК из байт, а не словарь
-        result = uploadcare.upload_files([file_bytes])
-        
-        # Получаем UUID первого (и единственного) загруженного файла
-        file_uuid = result[0].uuid
-        
-        # Создаем объект File из UUID
-        ucare_file = uploadcare.file(file_uuid)
-        
-        # Получаем готовый CDN URL
-        image_url_to_save = ucare_file.cdn_url
+        # response - это уже готовый объект FileInfo, а не словарь
+        # Получаем CDN URL напрямую из него
+        image_url_to_save = response.cdn_url
         print(f"Файл загружен в Uploadcare, URL: {image_url_to_save}")
         # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
         
