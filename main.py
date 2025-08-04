@@ -25,12 +25,6 @@ app = FastAPI(
     version="1.2.0" # Повышаем версию с Uploadcare
 )
 
-# --- Конфигурация Uploadcare ---
-uploadcare = Uploadcare(
-    public_key=settings.UPLOADCARE_PUBLIC_KEY,
-    secret_key=settings.UPLOADCARE_SECRET_KEY,
-)
-
 # --- Настройка CORS ---
 app.add_middleware(
     CORSMiddleware,
@@ -99,7 +93,7 @@ def create_new_announcement(
 
     image_url_to_save = None
     if image:
-        # Создаем уникальное имя файла, чтобы избежать конфликтов
+        # Создаем уникальное имя файла
         unique_id = uuid.uuid4()
         extension = image.filename.split('.')[-1]
         image_filename = f"{unique_id}.{extension}"
