@@ -1,6 +1,8 @@
 # main.py
 
+import shutil
 import uuid
+import os
 from fastapi import FastAPI, Depends, HTTPException, APIRouter, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -82,12 +84,6 @@ def get_prices_for_region(region: str):
     ]
     return mock_prices
 
-# main.py
-
-# main.py
-
-# main.py
-
 @api_router.post("/announcements/", response_model=announcement_schema.AnnouncementDisplay, tags=["Announcements"])
 def create_new_announcement(
     title: str = Form(...),
@@ -103,19 +99,21 @@ def create_new_announcement(
 
     image_url_to_save = None
     if image:
-        # --- НАЧАЛО ИСПРАВЛЕНИЯ ---
-        # Читаем файл в байты
-        file_bytes = image.file.read()
-
-        # Используем `uploader` прямо из нашего `uploadcare` объекта
-        # Это более стабильный способ
-        response = uploadcare.uploader.upload(file_bytes, file_name=image.filename)
+        # Создаем уникальное имя файла, чтобы избежать конфликтов
+        unique_id = uuid.uuid4()
+        extension = image.filename.split('.')[-1]
+        image_filename = f"{unique_id}.{extension}"
         
-        # response - это уже готовый объект FileInfo, а не словарь
-        # Получаем CDN URL напрямую из него
-        image_url_to_save = response.cdn_url
-        print(f"Файл загружен в Uploadcare, URL: {image_url_to_save}")
-        # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
+        # Путь для сохранения файла на сервере
+        file_path = f"uploads/{image_filename}"
+
+        # Сохраняем файл на диск
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        
+        # В базу данных сохраняем относительный URL
+        image_url_to_save = f"/uploads/{image_filename}"
+        print(f"Файл сохранен локально по пути: {file_path}")
         
     announcement_data = announcement_schema.AnnouncementCreate(
         title=title, description=description, price=price
